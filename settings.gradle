@@ -1,0 +1,2 @@
+rootProject.name = "Stream_Chat_Application"
+include ':app'
