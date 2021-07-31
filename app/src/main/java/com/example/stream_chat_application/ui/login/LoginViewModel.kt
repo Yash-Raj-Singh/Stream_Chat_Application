@@ -14,30 +14,28 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val client: ChatClient
-): ViewModel() {
-
+) : ViewModel() {
 
     private val _loginEvent = MutableSharedFlow<LogInEvent>()
-    val logInEvent = _loginEvent.asSharedFlow()
+    val loginEvent = _loginEvent.asSharedFlow()
 
-    private fun isValidUsername(username : String) = username.length >= Constants.MIN_USERNAME_LENGTH
+    private fun isValidUsername(username: String) =
+        username.length >= Constants.MIN_USERNAME_LENGTH
 
-    fun connectUser(username: String)
-    {
+    fun connectUser(username: String) {
         val trimmedUsername = username.trim()
         viewModelScope.launch {
-            if (isValidUsername(trimmedUsername))
-            {
-                val result = client.connectGuestUser(userId = trimmedUsername, username = trimmedUsername).await()
-                if (result.isError)
-                {
-                    _loginEvent.emit(LogInEvent.ErrorLogIn(result.error().message?:"Unknown Error"))
+            if(isValidUsername(trimmedUsername)) {
+                val result = client.connectGuestUser(
+                    userId = trimmedUsername,
+                    username = trimmedUsername
+                ).await()
+                if(result.isError) {
+                    _loginEvent.emit(LogInEvent.ErrorLogIn(result.error().message ?: "Unknown error"))
                     return@launch
                 }
                 _loginEvent.emit(LogInEvent.Success)
-            }
-            else
-            {
+            } else {
                 _loginEvent.emit(LogInEvent.ErrorInputTooShort)
             }
         }
@@ -45,7 +43,7 @@ class LoginViewModel @Inject constructor(
 
     sealed class LogInEvent {
         object ErrorInputTooShort : LogInEvent()
-        data class ErrorLogIn(val error : String): LogInEvent()
+        data class ErrorLogIn(val error: String) : LogInEvent()
         object Success : LogInEvent()
     }
 }
